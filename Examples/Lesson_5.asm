@@ -1,6 +1,8 @@
 .586P
 .model flat, stdcall
 
+; Basit bir form örneği
+
 ;------------> Constants <------------
 WM_DESTROY equ 2		; Pencere Kapatılması
 WM_CREATE equ 1			; Pencere Oluşumu
@@ -51,16 +53,16 @@ MsgStruct struct			; Message Structure
 MsgStruct ends
 
 WndClass struct				; Window Style Structure
-	style dd ? 				; UINT 		-- Pencere Stili
-	lpfnWndProc dd ? 		; WNDPROC 	-- Mesaj prosedüre işaretçi
-	cbClsExtra dd ? 		; int 		-- Yardımcı baytlar hakkında bilgi
-	cbWndExtra dd ? 		; int 		-- Yardımcı baytlar hakkında bilgi
-	hInstance dd ? 			; HINSTANCE -- Uygulama Tanımlayıcısı
-	hIcon dd ? 				; HICON 	-- Pencere icon Tanımlayıcısı
-	hCursor dd ? 			; HCURSOR 	-- Pencere Kursor Tanımlayıcısı
-	hbrBackground dd ? 		; HBRUSH	-- Pencere background Tanımlayıcısı
-	lpszMenuName dd ? 		; LPCSTR	-- Menu Tanımlayıcısı
-	lpszClassName dd ? 		; LPCSTR	-- Pencere sınıfı adı
+	clsStyle dd ? 			; Pencere Stili
+	clWndProc dd ? 			; Mesaj prosedüre işaretçi
+	clscExtra dd ? 			; Yardımcı baytlar hakkında bilgi
+	clWndExtra dd ? 		; Yardımcı baytlar hakkında bilgi
+	clsHinstance dd ? 		; Uygulama Tanımlayıcısı
+	clsHicon dd ? 			; Pencere icon Tanımlayıcısı
+	clsHcursor dd ? 		; Pencere Kursor Tanımlayıcısı
+	clBkGround dd ? 		; Pencere background Tanımlayıcısı
+	clMenuName dd ? 		; Menu Tanımlayıcısı
+	clName dd ? 			; Pencere sınıfı adı
 WndClass ends
 
 _data segment				; Data Segment
@@ -84,32 +86,31 @@ start:
 
 reg_class:
 	; Window class structure doldurulur.
-	mov [wc.style], style
-	mov [wc.lpfnWndProc], offset wndProc
-	mov [wc.cbClsExtra], 0
-	mov [wc.cbWndExtra], 0
+	mov [wc.clsStyle], style
+	mov [wc.clWndProc], offset wndProc
+	mov [wc.clscExtra], 0
+	mov [wc.clWndExtra], 0
 	mov eax, [hInst]
-	mov [wc.hInstance], eax
+	mov [wc.clsHinstance], eax
 	
 	; ----------> Window Icon <----------
 	push IDI_APPLICATION
 	push 0
 	call LoadIconA@8
-	mov [wc.hIcon], eax
+	mov [wc.clsHicon], eax
 	
 	; ----------> Window Cursor <----------
 	push IDC_CROSS
 	push 0
 	call LoadCursorA@8
-	mov [wc.hCursor], eax
+	mov [wc.clsHcursor], eax
 	
-	mov [wc.hbrBackground], 17				; Window Background Color
-	mov dword ptr [wc.lpszMenuName], 0
-	mov dword ptr [wc.lpszClassName], offset className
+	mov [wc.clBkGround], 17				; Window Background Color
 	
+	mov dword ptr [wc.clMenuName], 0
+	mov dword ptr [wc.clName], offset className
 	push offset wc
 	call RegisterClassA@4
-	
 	push 0
 	push [hInst]
 	push 0
@@ -142,10 +143,8 @@ msg_loop:
 	call GetMessageA@16
 	cmp eax, 0
 	je end_loop
-	
 	push offset msg
 	call TranslateMessage@4
-	
 	push offset msg
 	call DispatchMessageA@4
 	jmp msg_loop
